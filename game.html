@@ -8,12 +8,21 @@
 </head>
 <body>
     <div class="container">
-        <h1 id="title">Enter the number of questions</h1>
+        <h1 id="title">Choose a Trivia Set and Enter the Number of Questions</h1>
+        <select id="triviaSetSelect">
+            <option value="general">General Knowledge</option>
+            <option value="science">Science</option>
+            <option value="history">History</option>
+        </select>
         <input type="number" id="questionCountInput" min="1" placeholder="Enter a number">
         <button id="startButton" onclick="startGame()">Start</button>
+        <div id="sliderExplanation" style="display:none;">
+            <p>For each statement, use the slider to indicate the probability that the statement is true. The slider goes from 0% (definitely false) to 100% (definitely true).</p>
+        </div>
         <div id="questionsContainer"></div>
         <button id="submitAnswers" onclick="submitAnswers()" style="display:none;">Submit Answers</button>
     </div>
     <script src="scripts.js"></script>
 </body>
 </html>
+
