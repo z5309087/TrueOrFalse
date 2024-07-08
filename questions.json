@@ -1,0 +1,23 @@
+{
+    "general": [
+        { "question": "The sky is blue.", "answer": true },
+        { "question": "Cats can fly.", "answer": false },
+        { "question": "2+2 equals 4.", "answer": true },
+        { "question": "The earth is flat.", "answer": false },
+        { "question": "Water freezes at 0 degrees Celsius.", "answer": true }
+    ],
+    "science": [
+        { "question": "The chemical symbol for water is H2O.", "answer": true },
+        { "question": "The Earth is the third planet from the Sun.", "answer": true },
+        { "question": "Lightning never strikes the same place twice.", "answer": false },
+        { "question": "Humans have five senses.", "answer": true },
+        { "question": "Sound travels faster in air than in water.", "answer": false }
+    ],
+    "history": [
+        { "question": "The Roman Empire was the longest-lasting empire.", "answer": false },
+        { "question": "World War II ended in 1945.", "answer": true },
+        { "question": "The Great Wall of China was built in a single dynasty.", "answer": false },
+        { "question": "The Declaration of Independence was signed in 1776.", "answer": true },
+        { "question": "The first human to step on the moon was Neil Armstrong.", "answer": true }
+    ]
+}
