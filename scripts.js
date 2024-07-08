@@ -1,57 +1,56 @@
-const questions = [
-    { question: "The sky is blue.", answer: true },
-    { question: "Cats can fly.", answer: false },
-    { question: "2+2 equals 4.", answer: true },
-    { question: "The earth is flat.", answer: false },
-    { question: "Water freezes at 0 degrees Celsius.", answer: true },
-    { question: "The sun rises in the west.", answer: false },
-    { question: "Humans have walked on the moon.", answer: true },
-    { question: "Sharks are mammals.", answer: false },
-    { question: "Gold is a metal.", answer: true },
-    { question: "Penguins can fly.", answer: false },
-    { question: "Light travels faster than sound.", answer: true },
-    { question: "Bats are blind.", answer: false },
-    { question: "The Great Wall of China is visible from space.", answer: false },
-    { question: "Venus is the closest planet to the sun.", answer: false },
-    { question: "Electric cars are powered by gasoline.", answer: false },
-    { question: "Sound travels in waves.", answer: true },
-    { question: "The human body has four lungs.", answer: false },
-    { question: "Mount Everest is the highest mountain on Earth.", answer: true },
-    { question: "The Pacific Ocean is the largest ocean on Earth.", answer: true },
-    { question: "There are 26 letters in the English alphabet.", answer: true }
-];
-
+let triviaSets = {};
 let userAnswers = [];
 let selectedQuestions = [];
 
+document.addEventListener('DOMContentLoaded', () => {
+    fetch('questions.json')
+        .then(response => response.json())
+        .then(data => {
+            triviaSets = data;
+        })
+        .catch(error => console.error('Error loading questions:', error));
+});
+
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
 function startGame() {
+    const triviaSetSelect = document.getElementById('triviaSetSelect').value;
+    const selectedTriviaSet = triviaSets[triviaSetSelect];
+
     const questionCountInput = document.getElementById('questionCountInput');
     const questionCount = parseInt(questionCountInput.value, 10);
-    if (isNaN(questionCount) || questionCount <= 0) {
-        alert('Please enter a valid number of questions.');
+    if (isNaN(questionCount) || questionCount <= 0 || questionCount > selectedTriviaSet.length) {
+        alert(`Please enter a valid number of questions (1-${selectedTriviaSet.length}).`);
         return;
     }
 
+    document.getElementById('triviaSetSelect').style.display = 'none';
     document.getElementById('questionCountInput').style.display = 'none';
     document.getElementById('startButton').style.display = 'none';
     document.getElementById('title').innerText = 'Trivia Questions';
+    document.getElementById('sliderExplanation').style.display = 'block';
+
+    shuffleArray(selectedTriviaSet);
+    selectedQuestions = selectedTriviaSet.slice(0, questionCount);
 
     const container = document.getElementById('questionsContainer');
     container.innerHTML = '';
-    selectedQuestions = [];
-    for (let i = 0; i < questionCount; i++) {
-        const question = questions[Math.floor(Math.random() * questions.length)];
-        selectedQuestions.push(question); // Store the selected questions
+    selectedQuestions.forEach((question, i) => {
         const questionHTML = `
             <div>
                 <p>${question.question}</p>
-                <label for="confidence${i}">What is the probability that this statement is true? (0-100%)</label>
                 <input type="range" id="confidence${i}" name="confidence" min="0" max="100" value="50" oninput="document.getElementById('confidenceValue${i}').innerText = this.value + '%'">
                 <span id="confidenceValue${i}">50%</span>
             </div>
         `;
         container.innerHTML += questionHTML;
-    }
+    });
+
     document.getElementById('submitAnswers').style.display = 'block';
 }
 
@@ -78,6 +77,7 @@ function calculateScore() {
         sumOfSquares += Math.pow(error, 2);
     });
     const meanSquaredError = sumOfSquares / userAnswers.length;
-    localStorage.setItem('score', meanSquaredError);
+    const normalizedScore = meanSquaredError / 10000;
+    localStorage.setItem('score', normalizedScore);
     window.location.href = 'result.html';
 }
