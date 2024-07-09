@@ -10,17 +10,22 @@
     <div class="container">
         <h1 id="title">Choose a Trivia Set and Enter the Number of Questions</h1>
         <select id="triviaSetSelect">
-            <option value="general">General Knowledge</option>
-            <option value="science">Science</option>
-            <option value="history">History</option>
+            <option value="All">All</option>
+            <option value="General Knowledge">General Knowledge</option>
+            <option value="Animals">Animals</option>
+            <option value="Food and Drink">Food and Drink</option>
+            <option value="Holidays">Holidays</option>
+            <option value="Geography">Geography</option>
+            <option value="Human Body">Human Body</option>
+            <option value="Disney">Disney</option>
+            <option value="History">History</option>
+            <option value="Science">Science</option>
         </select>
-        <input type="number" id="questionCountInput" min="1" placeholder="Enter a number">
-        <button id="startButton" onclick="startGame()">Start</button>
-        <div id="sliderExplanation" style="display:none;">
-            <p>For each statement, use the slider to indicate the probability that the statement is true. The slider goes from 0% (definitely false) to 100% (definitely true).</p>
-        </div>
+        <input type="number" id="questionCountInput" placeholder="Number of Questions">
+        <button id="startButton" onclick="startGame()">Start Game</button>
+        <h2 id="sliderExplanation" style="display:none;">Use the slider to indicate your confidence level for each question.</h2>
         <div id="questionsContainer"></div>
-        <button id="submitAnswers" onclick="submitAnswers()" style="display:none;">Submit Answers</button>
+        <button id="submitAnswers" style="display:none;" onclick="submitAnswers()">Submit Answers</button>
     </div>
     <script src="scripts.js"></script>
 </body>
