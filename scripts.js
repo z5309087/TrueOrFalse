@@ -20,7 +20,21 @@ function shuffleArray(array) {
 
 function startGame() {
     const triviaSetSelect = document.getElementById('triviaSetSelect').value;
-    const selectedTriviaSet = triviaSets[triviaSetSelect];
+    let selectedTriviaSet;
+
+    if (triviaSetSelect === 'All') {
+        selectedTriviaSet = [];
+        for (let set in triviaSets) {
+            selectedTriviaSet = selectedTriviaSet.concat(triviaSets[set]);
+        }
+    } else {
+        selectedTriviaSet = triviaSets[triviaSetSelect];
+    }
+
+    if (!selectedTriviaSet || selectedTriviaSet.length === 0) {
+        alert('Selected trivia set not found or no questions available.');
+        return;
+    }
 
     const questionCountInput = document.getElementById('questionCountInput');
     const questionCount = parseInt(questionCountInput.value, 10);
@@ -59,8 +73,10 @@ function submitAnswers() {
     for (let i = 0; i < selectedQuestions.length; i++) {
         const confidenceElement = document.getElementById(`confidence${i}`);
         if (confidenceElement) {
-            const confidence = confidenceElement.value;
-            userAnswers.push({ confidence: parseInt(confidence, 10) });
+            const confidence = parseInt(confidenceElement.value, 10);
+            const normalizedConfidence = confidence < 50 ? 100 - confidence : confidence;
+            const correct = selectedQuestions[i].answer === (confidence > 50);
+            userAnswers.push({ confidence: normalizedConfidence, correct });
         } else {
             alert('Please set the confidence levels for all questions.');
             return;
@@ -71,13 +87,38 @@ function submitAnswers() {
 
 function calculateScore() {
     let sumOfSquares = 0;
+    let confidenceData = {};
+
     userAnswers.forEach((userAnswer, index) => {
-        const correctAnswer = selectedQuestions[index].answer;
-        const error = correctAnswer ? (100 - userAnswer.confidence) : userAnswer.confidence;
+        const { confidence, correct } = userAnswer;
+        const error = correct ? (100 - confidence) : confidence;
         sumOfSquares += Math.pow(error, 2);
+
+        if (!confidenceData[confidence]) {
+            confidenceData[confidence] = { correct: 0, total: 0 };
+        }
+        confidenceData[confidence].total += 1;
+        if (correct) {
+            confidenceData[confidence].correct += 1;
+        }
     });
+
+    let accuracyData = [];
+    for (let confidence in confidenceData) {
+        const accuracy = (confidenceData[confidence].correct / confidenceData[confidence].total) * 100;
+        accuracyData.push({ confidence: parseInt(confidence), accuracy });
+    }
+
+    accuracyData.sort((a, b) => a.confidence - b.confidence);
+
     const meanSquaredError = sumOfSquares / userAnswers.length;
-    const normalizedScore = meanSquaredError / 10000;
+    const normalizedScore = meanSquaredError / 10000;  // Normalize score to range 0-1
+
+    console.log('Sum of Squares:', sumOfSquares);
+    console.log('Normalized Score:', normalizedScore);
+    console.log('Accuracy Data:', accuracyData);
+
     localStorage.setItem('score', normalizedScore);
+    localStorage.setItem('accuracyData', JSON.stringify(accuracyData));
     window.location.href = 'result.html';
 }
