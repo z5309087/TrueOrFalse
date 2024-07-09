@@ -4,16 +4,124 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="styles.css">
-    <title>True or False Game</title>
+    <title>True or False Game - Results</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="container">
         <h1>Your Score</h1>
         <p id="score"></p>
+        <h2>Accuracy by Confidence Level</h2>
+        <canvas id="accuracyChart" width="400" height="200"></canvas>
+        <h2>Suggestion</h2>
+        <p id="suggestion"></p>
         <button onclick="window.location.href='index.html'">Play Again</button>
     </div>
     <script>
-        document.getElementById('score').innerText = localStorage.getItem('score');
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('score').innerText = localStorage.getItem('score');
+            
+            const accuracyData = JSON.parse(localStorage.getItem('accuracyData') || '[]');
+            console.log('Loaded Accuracy Data:', accuracyData);
+
+            if (accuracyData.length > 0) {
+                const ctx = document.getElementById('accuracyChart').getContext('2d');
+                const labels = accuracyData.map(data => data.confidence);
+                const actualAccuracy = accuracyData.map(data => data.accuracy);
+
+                // Create expected accuracy from 50 to 100
+                const expectedLabels = [];
+                const expectedAccuracy = [];
+                for (let i = 50; i <= 100; i++) {
+                    expectedLabels.push(i);
+                    expectedAccuracy.push(i);
+                }
+
+                // Calculate the moving average and handle edge cases
+                function movingAverageWithEdges(data, labels, windowSize) {
+                    let result = [];
+                    for (let i = 0; i < data.length; i++) {
+                        const start = Math.max(0, i - Math.floor(windowSize / 2));
+                        const end = Math.min(data.length, i + Math.floor(windowSize / 2) + 1);
+                        const windowData = data.slice(start, end);
+                        const avg = windowData.reduce((sum, value) => sum + value, 0) / windowData.length;
+                        result.push({ x: labels[i], y: avg });
+                    }
+
+                    // Handle edge cases by extending lines towards (50,50) and (100,100)
+                    if (result.length > 0) {
+                        if (result[0].x > 50) {
+                            result.unshift({ x: 50, y: 50 });
+                        }
+                        if (result[result.length - 1].x < 100) {
+                            result.push({ x: 100, y: 100 });
+                        }
+                    }
+
+                    return result;
+                }
+
+                const windowSize = 5; // Adjust window size as needed
+                const smoothedAccuracy = movingAverageWithEdges(actualAccuracy, labels, windowSize);
+
+                // Calculate the average actual accuracy and expected accuracy
+                const avgActualAccuracy = smoothedAccuracy.reduce((sum, point) => sum + point.y, 0) / smoothedAccuracy.length;
+                const avgExpectedAccuracy = expectedLabels.reduce((sum, val) => sum + val, 0) / expectedLabels.length;
+
+                // Generate suggestion based on comparison
+                let suggestion = '';
+                if (avgActualAccuracy > avgExpectedAccuracy) {
+                    suggestion = 'Based on your performance, you should be more confident in your guesses.';
+                } else if (avgActualAccuracy < avgExpectedAccuracy) {
+                    suggestion = 'Based on your performance, you should be less confident in your guesses.';
+                } else {
+                    suggestion = 'Your confidence level is well-calibrated.';
+                }
+                document.getElementById('suggestion').innerText = suggestion;
+
+                const chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: expectedLabels, // Use expected labels for the x-axis
+                        datasets: [
+                            {
+                                label: 'Actual Accuracy (Smoothed)',
+                                data: smoothedAccuracy,
+                                borderColor: 'red',
+                                fill: false,
+                                lineTension: 0 // Make sure lines are straight
+                            },
+                            {
+                                label: 'Expected Accuracy',
+                                data: expectedLabels.map((label, index) => ({
+                                    x: label,
+                                    y: expectedAccuracy[index]
+                                })),
+                                borderColor: 'green',
+                                fill: false
+                            }
+                        ]
+                    },
+                    options: {
+                        scales: {
+                            x: {
+                                type: 'linear',
+                                position: 'bottom',
+                                min: 50,
+                                max: 100
+                            },
+                            y: {
+                                beginAtZero: true,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+            } else {
+                console.error('No accuracy data found.');
+            }
+        });
     </script>
 </body>
 </html>
+
